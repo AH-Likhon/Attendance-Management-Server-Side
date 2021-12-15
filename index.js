@@ -20,26 +20,26 @@ async function run() {
     try {
         await client.connect();
         // console.log('Databse Connected');
-        const database = client.db('attendance');
-        const usersAttendance = database.collection('usersAttendance');
+        const database = client.db('Attendance');
+        const startRecord = database.collection('Start-Working');
         // const reviewsCollection = database.collection('reviews');
         // const ordersCollection = database.collection('orders');
         // const usersCollection = database.collection('users');
 
-        // // get all cars api
-        // app.get("/allCars", async (req, res) => {
-        //     const result = await carsCollection.find({}).toArray();
-        //     // console.log(req.body);
-        //     res.send(result);
-        // });
+        // get all cars api
+        app.get("/startRecording", async (req, res) => {
+            const result = await startRecord.find({}).toArray();
+            console.log(req.body);
+            res.send(result);
+        });
 
-        // // insert new car api
-        // app.post('/allCars', async (req, res) => {
-        //     const car = req.body;
-        //     const result = await carsCollection.insertOne(car);
-        //     console.log(result);
-        //     res.json(result);
-        // });
+        // insert starting record time api
+        app.post('/startRecording', async (req, res) => {
+            const time = req.body;
+            const result = await startRecord.insertOne(time);
+            console.log(result);
+            res.json(result);
+        });
 
         // // delete single car api
         // app.delete("/allCars/:id", async (req, res) => {
