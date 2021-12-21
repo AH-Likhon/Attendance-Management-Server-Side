@@ -21,25 +21,51 @@ async function run() {
         await client.connect();
         // console.log('Databse Connected');
         const database = client.db('Attendance');
-        const startRecord = database.collection('Start-Working');
-        // const reviewsCollection = database.collection('reviews');
-        // const ordersCollection = database.collection('orders');
-        // const usersCollection = database.collection('users');
+        const recordTime = database.collection('Record-Time');
+        const usersCollection = database.collection('Users');
+        // const startBreak = database.collection('Start-Break');
+        // const endBreak = database.collection('End-Break');
+        // const goToday = database.collection('Go-Today');
 
-        // get all cars api
-        app.get("/startRecording", async (req, res) => {
-            const result = await startRecord.find({}).toArray();
+
+        // get all starting record api
+        app.get("/recordTime", async (req, res) => {
+            const result = await recordTime.find({}).toArray();
             console.log(req.body);
             res.send(result);
         });
 
+
         // insert starting record time api
-        app.post('/startRecording', async (req, res) => {
+        app.post('/recordTime', async (req, res) => {
             const time = req.body;
-            const result = await startRecord.insertOne(time);
+            const result = await recordTime.insertOne(time);
             console.log(result);
+
             res.json(result);
         });
+
+        // get myAttendance api
+        // app.get("/myAttendance/:email", async (req, res) => {
+        //     const result = await recordTime.find({
+        //         email: req.params.email,
+        //     }).toArray();
+        //     console.log(result);
+        //     res.send(result);
+        // });
+
+        // get my myAttendance api
+        app.get('/allAttendance', async (req, res) => {
+            const email = req.query.email;
+            const query = { userEmail: email };
+            const cursor = recordTime.find(query);
+            const result = await cursor.toArray();
+            console.log(result);
+            res.send(result);
+        });
+
+
+
 
         // // delete single car api
         // app.delete("/allCars/:id", async (req, res) => {
@@ -140,47 +166,47 @@ async function run() {
 
 
 
-        // // get admin user
-        // app.get('/users/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = { email: email };
-        //     const user = await usersCollection.findOne(query);
-        //     let isAdmin = false;
-        //     if (user?.role === 'admin') {
-        //         isAdmin = true;
-        //     }
-        //     res.json({ admin: isAdmin })
-        // })
+        // get admin user
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin })
+        })
 
-        // // insert a user
-        // app.post('/users', async (req, res) => {
-        //     const user = req.body;
-        //     const result = await usersCollection.insertOne(user);
-        //     console.log(result);
-        //     res.json(result);
-        // });
-
-
-        // // update a user
-        // app.put('/users', async (req, res) => {
-        //     const user = req.body;
-        //     const filter = { email: user.email };
-        //     const options = { upsert: true };
-        //     const updateDoc = { $set: user };
-        //     const result = await usersCollection.updateOne(filter, updateDoc, options);
-        //     res.json(result);
-        // });
+        // insert a user
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            console.log(result);
+            res.json(result);
+        });
 
 
-        // // update user role
-        // app.put('/users/admin', async (req, res) => {
-        //     const user = req.body;
-        //     const filter = { email: user.email };
-        //     const updateDoc = { $set: { role: 'admin' } };
-        //     const result = await usersCollection.updateOne(filter, updateDoc);
-        //     console.log('put', result);
-        //     res.json(result);
-        // })
+        // update a user
+        app.put('/users', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
+        });
+
+
+        // update user role
+        app.put('/users/admin', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const updateDoc = { $set: { role: 'admin' } };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            console.log('put', result);
+            res.json(result);
+        })
     }
     finally {
         // await client.close();
