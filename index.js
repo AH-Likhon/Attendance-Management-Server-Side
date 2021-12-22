@@ -45,22 +45,58 @@ async function run() {
             res.json(result);
         });
 
-        // get myAttendance api
-        // app.get("/myAttendance/:email", async (req, res) => {
-        //     const result = await recordTime.find({
-        //         email: req.params.email,
-        //     }).toArray();
-        //     console.log(result);
-        //     res.send(result);
-        // });
 
         // get my myAttendance api
         app.get('/allAttendance', async (req, res) => {
             const email = req.query.email;
-            const query = { userEmail: email };
+            const query = { email: email };
             const cursor = recordTime.find(query);
             const result = await cursor.toArray();
             console.log(result);
+            res.send(result);
+        });
+
+        // find a single order api
+        app.get('/editAttendance/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await recordTime.findOne(query);
+            // console.log('Find with id', id);
+            res.send(result);
+        });
+
+        // update my attendance
+        app.put('/editAttendance/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateData = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    startHour: updateData.startHour,
+                    startMin: updateData.startMin,
+                    startBreakHour: updateData.startBreakHour,
+                    startBreakMin: updateData.startBreakMin,
+                    endBreakHour: updateData.endBreakHour,
+                    endBreakMin: updateData.endBreakMin,
+                    endHour: updateData.endHour,
+                    endMin: updateData.endMin,
+                    memo: updateData.memo
+                },
+            };
+            const result = await recordTime.updateOne(filter, updateDoc, options);
+
+            console.log(result);
+            // console.log(req.body);
+            res.json(result);
+        })
+
+        // Delete/remove my attendance 
+        app.delete("/editAttendance/:id", async (req, res) => {
+            console.log(req.params.id);
+            const result = await recordTime.deleteOne({
+                _id: ObjectId(req.params.id),
+            });
             res.send(result);
         });
 
@@ -119,14 +155,7 @@ async function run() {
 
 
 
-        // // find a single order api
-        // app.get('/orders/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const car = await ordersCollection.findOne(query);
-        //     // console.log('Find with id', id);
-        //     res.send(car);
-        // });
+
 
         // // insert orders
         // app.post('/orders', async (req, res) => {
@@ -172,11 +201,28 @@ async function run() {
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             let isAdmin = false;
-            if (user?.role === 'admin') {
+            if (user?.role === 'Admin') {
                 isAdmin = true;
             }
             res.json({ admin: isAdmin })
         })
+
+
+        //get all users api
+        app.get("/members", async (req, res) => {
+            const result = await usersCollection.find({}).toArray();
+            // console.log(req.body);
+            res.send(result);
+        });
+
+        // Delete/remove specific users
+        app.delete("/users/:id", async (req, res) => {
+            console.log(req.params.id);
+            const result = await usersCollection.deleteOne({
+                _id: ObjectId(req.params.id),
+            });
+            res.send(result);
+        });
 
         // insert a user
         app.post('/users', async (req, res) => {
@@ -192,7 +238,12 @@ async function run() {
             const user = req.body;
             const filter = { email: user.email };
             const options = { upsert: true };
-            const updateDoc = { $set: user };
+            const updateDoc = {
+                $set: {
+                    ...user,
+                    role: 'Member'
+                }
+            };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
             res.json(result);
         });
@@ -202,7 +253,7 @@ async function run() {
         app.put('/users/admin', async (req, res) => {
             const user = req.body;
             const filter = { email: user.email };
-            const updateDoc = { $set: { role: 'admin' } };
+            const updateDoc = { $set: { role: 'Admin' } };
             const result = await usersCollection.updateOne(filter, updateDoc);
             console.log('put', result);
             res.json(result);
