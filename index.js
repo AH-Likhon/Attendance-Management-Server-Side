@@ -23,9 +23,6 @@ async function run() {
         const database = client.db('Attendance');
         const recordTime = database.collection('Record-Time');
         const usersCollection = database.collection('Users');
-        // const startBreak = database.collection('Start-Break');
-        // const endBreak = database.collection('End-Break');
-        // const goToday = database.collection('Go-Today');
 
 
         // get all starting record api
@@ -101,100 +98,6 @@ async function run() {
         });
 
 
-
-
-        // // delete single car api
-        // app.delete("/allCars/:id", async (req, res) => {
-        //     console.log(req.params.id);
-        //     const result = await carsCollection.deleteOne({
-        //         _id: ObjectId(req.params.id),
-        //     });
-        //     res.send(result);
-        // });
-
-        // // get reviews api
-        // app.get("/reviews", async (req, res) => {
-        //     const result = await reviewsCollection.find({}).toArray();
-        //     // console.log(req.body);
-        //     res.send(result);
-        // });
-
-        // // insert a new review api
-        // app.post('/reviews', async (req, res) => {
-        //     const review = req.body;
-        //     const result = await reviewsCollection.insertOne(review);
-        //     res.json(result);
-        // });
-
-        // // find single car api
-        // app.get('/allCars/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const car = await carsCollection.findOne(query);
-        //     // console.log('Find with id', id);
-        //     res.send(car);
-        // });
-
-        // // get my orders api
-        // app.get('/orders', async (req, res) => {
-        //     const email = req.query.email;
-        //     const query = { email: email };
-        //     const cursor = ordersCollection.find(query);
-        //     const result = await cursor.toArray();
-        //     // console.log(result);
-        //     res.json(result);
-        // });
-
-
-        // //get all orders api
-        // app.get("/allOrders", async (req, res) => {
-        //     const result = await ordersCollection.find({}).toArray();
-        //     // console.log(req.body);
-        //     res.send(result);
-        // });
-
-
-
-
-
-        // // insert orders
-        // app.post('/orders', async (req, res) => {
-        //     const order = req.body;
-        //     const result = await ordersCollection.insertOne(order);
-        //     // console.log(result);
-        //     res.json(result);
-        // });
-
-        // // Delete/remove my single order
-        // app.delete("/orders/:id", async (req, res) => {
-        //     console.log(req.params.id);
-        //     const result = await ordersCollection.deleteOne({
-        //         _id: ObjectId(req.params.id),
-        //     });
-        //     res.send(result);
-        // });
-
-
-        // // update a single order
-        // app.put('/orders/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const updateOrder = req.body;
-        //     const filter = { _id: ObjectId(id) };
-        //     const options = { upsert: true };
-        //     const updateDoc = {
-        //         $set: {
-        //             status: "Approved",
-        //         },
-        //     };
-        //     const result = await ordersCollection.updateOne(filter, updateDoc, options);
-
-        //     console.log('Updating id', id);
-        //     // console.log(req.body);
-        //     res.json(result);
-        // })
-
-
-
         // get admin user
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email;
@@ -214,6 +117,37 @@ async function run() {
             // console.log(req.body);
             res.send(result);
         });
+
+        // get specific user information api
+        app.get('/members/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.findOne(query);
+            // console.log('Find with id', id);
+            res.send(result);
+        });
+
+        // update specific users information api 
+        app.put('/members/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateData = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    displayName: updateData.displayName,
+                    email: updateData.email,
+                    password: updateData.password,
+                    role: updateData.role,
+                    entryDate: updateData.entryDate,
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+
+            console.log(result);
+            // console.log(req.body);
+            res.json(result);
+        })
 
         // Delete/remove specific users
         app.delete("/users/:id", async (req, res) => {
@@ -240,8 +174,8 @@ async function run() {
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
-                    ...user,
-                    role: 'Member'
+                    user
+
                 }
             };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
